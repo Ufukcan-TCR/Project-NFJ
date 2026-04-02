@@ -13,21 +13,13 @@
             <h1>Legends Of <br> Gaming</h1>
         </div>
         <div class="middle-group">
-            <div class="selected">Home</div>
-            <div class="item"><a href="shop.php">Shop</a></div>
+            <div class="item"><a href="index.php">Home</a></div>
+            <div class="selected">Shop</div>
             <div class="item"><a href="winkelmandje.php">Winkelmandje</a></div>
-
         </div>
+
     <div class="end"> Log In</div>
     </div>
-    <section>
-        <?php
-        include 'functions.php';
-        crudMain();
-        ?>
-    </section>
-
-
         
 
 
