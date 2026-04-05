@@ -134,9 +134,10 @@ function updateRecord(array $row){
     // Maak een query 
     $sql = "UPDATE " . CRUD_TABLE .
     " SET 
+        naam = :naam,
         prijs = :prijs, 
         description = :description, 
-        idgenre = :idgenre,
+        genre = :genre,
         player = :player,
         domain = :domain,
         consol = :consol,
@@ -146,9 +147,10 @@ function updateRecord(array $row){
 
     // De waarden die worden doorgegeven aan de query
     $values = [
+        ':naam' => $row['naam'],
         ':prijs' => $row['prijs'],
         ':description' => $row['description'],
-        ':idgenre' => $row['idgenre'],
+        ':genre' => $row['genre'],
         ':player' => $row['player'],
         ':domain' => $row['domain'],
         ':consol' => $row['consol'],
@@ -175,15 +177,16 @@ function insertRecord($post): bool  {
     // Maak een query
     // Merk dat de id niet in de insert query staat, deze wordt automatisch door de database aangemaakt
     $sql = "
-        INSERT INTO " . CRUD_TABLE . " (prijs, description, idgenre, player, domain, consol, img)
-        VALUES (:prijs, :description, :idgenre, :player, :domain, :consol, :img) 
+        INSERT INTO " . CRUD_TABLE . " (naam, prijs, description, genre, player, domain, consol, img)
+        VALUES (:naam, :prijs, :description, :genre, :player, :domain, :consol, :img) 
     ";
  
     // De waarden die worden doorgegeven aan de query
     $values = [
+        ':naam' => $post['naam'],
         ':prijs' => $post['prijs'],
         ':description' => $post['description'],
-        ':idgenre' => $post['idgenre'],
+        ':genre' => $post['genre'],
         ':player' => $post['player'],
         ':domain' => $post['domain'],
         ':consol' => $post['consol'],

@@ -20,12 +20,6 @@
         </div>
     <div class="end"> Log In</div>
     </div>
-    <section>
-        <?php
-        include 'functions.php';
-        crudMain();
-        ?>
-    </section>
 
 
         
