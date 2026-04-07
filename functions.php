@@ -246,7 +246,6 @@ function deleteRecord($id){
 
 function login(){
 
-if{}
 
 
 
