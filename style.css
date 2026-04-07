@@ -26,10 +26,12 @@ h1 {
     font-size: 50px;
 }
 
-.end {
+button.end {
+    background-color:  rgb(131, 11, 11) !important;
     margin-right: 100px;
     font-size: 28px;
     font-weight: bold;
+    border: none;
 }
 
 footer{

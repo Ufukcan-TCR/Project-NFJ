@@ -244,4 +244,12 @@ function deleteRecord($id){
     return $retVal;
 }
 
+function login(){
+
+if{}
+
+
+
+}
+
 ?>
