@@ -8,5 +8,6 @@ define("USERNAME", "root");
 define("PASSWORD", "");
 
 define("CRUD_TABLE", "videogames");
+define("CRUD_TABLE2", "winkelmandinhoud");
 
 ?>

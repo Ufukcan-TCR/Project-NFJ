@@ -46,6 +46,25 @@ include_once "config.php";
     
  }
 
+
+ // Winkelmandje functie CRUD NFT
+
+ function crudWinkelmand(){
+
+    // Menu-item   insert
+    $txt = "
+    <h1>Winkelmandje</h1>";
+    echo $txt;
+
+    // Haal alle Games record uit de tabel 
+    $result = getData(CRUD_TABLE2);
+
+    //print table
+    printCrudTabel($result);
+    
+ }
+
+
  // selecteer de data uit de opgeven table
  function getData($table): array {
     // Connect database
