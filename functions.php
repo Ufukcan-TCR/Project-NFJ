@@ -1,7 +1,6 @@
 <?php
 // auteur: Ufukcan
 // functie: algemene functies tbv hergebruik
-
 include_once "config.php";
 
  function connectDb(){
@@ -96,50 +95,69 @@ include_once "config.php";
 
 // Function 'printCrudTabel' print een HTML-table met data uit $result 
 // en een wzg- en -verwijder-knop.
-function printCrudTabel($result){
-    // Zet de hele table in een variable en print hem 1 keer 
-    $table = "<table>";
+function printCrudTabel($result) {
 
-    // Print header table
-
-    // haal de kolommen uit de eerste rij [0] van het array $result mbv array_keys
     if (empty($result)) {
         echo "<p>Geen gegevens gevonden.</p>";
         return;
     }
+
+    $table = "<table>";
+
+    // Headers ophalen
     $headers = array_keys($result[0]);
+
     $table .= "<tr>";
-    foreach($headers as $header){
-        $table .= "<th>" . $header . "</th>";   
+    foreach ($headers as $header) {
+        $table .= "<th>" . htmlspecialchars($header) . "</th>";
     }
-    // Voeg actie kopregel toe
-    $table .= "<th colspan=2>Actie</th>";
+
+    $table .= "<th colspan='2'>Actie</th>";
     $table .= "</tr>";
 
-    // print elke rij
+    // Rijen printen
     foreach ($result as $row) {
-        
-        $table .= "<tr>";
-        // print elke kolom
-        foreach ($row as $cell) {
-            $table .= "<td>" . $cell . "</td>";  
-        }
-        
-        // Wijzig knopje
-        $table .= "<td>
-            <form method='post' action='update.php?id=$row[id]' >       
-                <button class='btn'>Wzg</button>	 
-            </form></td>";
 
-        // Delete knopje
-        $table .= "<td>
-            <form method='post' action='delete.php?id=$row[id]' >       
-                <button class='btn'>Verwijder</button>	 
-            </form></td>";
+        $table .= "<tr>";  
+
+
+        foreach ($row as $key => $cell) {
+
+            if ($key == "img") {
+                $table .= "<td class='img-cell'><img class='img-table' src='pictures/" . htmlspecialchars($cell) . "' alt='Foto'></td>";
+            } 
+            elseif ($key == "naam") {
+                $table .= "<td>
+                    <a href='game.php?id=" . $row['id'] . "'>
+                        " . htmlspecialchars($cell) . "
+                    </a>
+                </td>";
+            }
+            else {
+                $table .= "<td>" . htmlspecialchars($cell) . "</td>";
+            }
+        }
+
+        // Wijzig knop
+        $table .= "
+        <td>
+            <form method='post' action='update.php?id=" . $row['id'] . "'>
+                <button class='btn' type='submit'>Wzg</button>
+            </form>
+        </td>";
+
+        // Verwijder knop
+        $table .= "
+        <td>
+            <form method='post' action='delete.php?id=" . $row['id'] . "'>
+                <button class='btn' type='submit'>Verwijder</button>
+            </form>
+        </td>";
 
         $table .= "</tr>";
     }
-    $table.= "</table>";
+
+    $table .= "</table>";
 
     echo $table;
 }
