@@ -13,8 +13,8 @@
             <h1>Legends Of <br> Gaming</h1>
         </div>
         <div class="middle-group">
-            <div class="item"><a href="index.php">Home</a></div>
-            <div class="item"><a href="shop.php">Shop</a></div>
+            <div class="item"><a class='pagina' href="index.php">Home</a></div>
+            <div class="item"><a class='pagina' href="shop.php">Shop</a></div>
             <div class="selected">Winkelmandje</div>
             
         </div>

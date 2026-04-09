@@ -23,8 +23,8 @@ $clicked = isset($_POST["login"]);
 
         <div class="middle-group">
             <div class="selected">Home</div>
-            <div class="item"><a href="shop.php">Shop</a></div>
-            <div class="item"><a href="winkelmandje.php">Winkelmandje</a></div>
+            <div class="item"><a class='pagina' href="shop.php">Shop</a></div>
+            <div class="item"><a class='pagina' href="winkelmandje.php">Winkelmandje</a></div>
         </div>
 
         <!-- LOGIN BUTTON COMES FROM FUNCTION -->
