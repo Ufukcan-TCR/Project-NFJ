@@ -48,20 +48,13 @@ include_once "config.php";
 
  // Winkelmandje functie CRUD NFT
 
- function crudWinkelmand(){
-
-    // Menu-item   insert
-    $txt = "
-    <h1>Winkelmandje</h1>";
+function crudWinkelmand(){
+    $txt = "<h1>Winkelmandje</h1>";
     echo $txt;
 
-    // Haal alle Games record uit de tabel 
     $result = getData(CRUD_TABLE2);
-
-    //print table
-    printCrudTabel($result);
-    
- }
+    printWinkelmandTabel($result);  // <- gewijzigd
+}
 
 
  // selecteer de data uit de opgeven table
@@ -102,38 +95,30 @@ function printCrudTabel($result) {
         return;
     }
 
+    $allowedColumns = ['img', 'naam', 'prijs', 'genre', 'consol'];
+
     $table = "<table>";
-
-    // Headers ophalen
-    $headers = array_keys($result[0]);
-
     $table .= "<tr>";
-    foreach ($headers as $header) {
+    foreach ($allowedColumns as $header) {
         $table .= "<th>" . htmlspecialchars($header) . "</th>";
     }
-
-    $table .= "<th colspan='2'>Actie</th>";
+    $table .= "<th colspan='3'>Actie</th>";
     $table .= "</tr>";
 
-    // Rijen printen
     foreach ($result as $row) {
+        $table .= "<tr>";
 
-        $table .= "<tr>";  
-
-
-        foreach ($row as $key => $cell) {
-
+        foreach ($allowedColumns as $key) {
+            $cell = $row[$key] ?? '';
             if ($key == "img") {
                 $table .= "<td class='img-cell'><img class='img-table' src='pictures/" . htmlspecialchars($cell) . "' alt='Foto'></td>";
-            } 
-            elseif ($key == "naam") {
+            } elseif ($key == "naam") {
                 $table .= "<td>
                     <a href='game.php?id=" . $row['id'] . "'>
                         " . htmlspecialchars($cell) . "
                     </a>
                 </td>";
-            }
-            else {
+            } else {
                 $table .= "<td>" . htmlspecialchars($cell) . "</td>";
             }
         }
@@ -154,11 +139,19 @@ function printCrudTabel($result) {
             </form>
         </td>";
 
+        // Winkelmandje knop
+        $table .= "
+        <td>
+            <form method='post' action='addToCart.php'>
+                <input type='hidden' name='game_id' value='" . $row['id'] . "'>
+                <button class='btn' type='submit'>🛒</button>
+            </form>
+        </td>";
+
         $table .= "</tr>";
     }
 
     $table .= "</table>";
-
     echo $table;
 }
 
@@ -280,6 +273,52 @@ function deleteRecord($id){
     $retVal = ($stmt->rowCount() == 1) ? true : false ;
     return $retVal;
 }
+
+function printWinkelmandTabel($result) {
+
+    if (empty($result)) {
+        echo "<p>Geen gegevens gevonden.</p>";
+        return;
+    }
+
+    $allowedColumns = ['img', 'naam', 'prijs'];
+
+    $table = "<table>";
+    $table .= "<tr>";
+    foreach ($allowedColumns as $header) {
+        $table .= "<th>" . htmlspecialchars($header) . "</th>";
+    }
+    $table .= "<th>Actie</th>";
+    $table .= "</tr>";
+
+    foreach ($result as $row) {
+        $table .= "<tr>";
+
+        foreach ($allowedColumns as $key) {
+            $cell = $row[$key] ?? '';
+            if ($key == "img") {
+                $table .= "<td class='img-cell'><img class='img-table' src='pictures/" . htmlspecialchars($cell) . "' alt='Foto'></td>";
+            } else {
+                $table .= "<td>" . htmlspecialchars($cell) . "</td>";
+            }
+        }
+
+        // Verwijder uit winkelmandje knop
+        $table .= "
+        <td>
+            <form method='post' action='removeFromCart.php'>
+                <input type='hidden' name='cart_id' value='" . $row['id'] . "'>
+                <button class='btn' type='submit'>Verwijder</button>
+            </form>
+        </td>";
+
+        $table .= "</tr>";
+    }
+
+    $table .= "</table>";
+    echo $table;
+}
+
 
 function login(){
 

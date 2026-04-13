@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ouderavond</title>
+    <title>Shop</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="main">
@@ -20,12 +20,12 @@
 
     <div class="end"> Log In</div>
     </div>
-    <section>
+    <div>
         <?php
         include 'functions.php';
         crudMain();
         ?>
-    </section>
+    </div>
 
 
 
