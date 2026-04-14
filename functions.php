@@ -67,8 +67,69 @@ function crudWinkelmand(){
     $txt = "<h1>Winkelmandje</h1>";
     echo $txt;
 
-    $result = getData(CRUD_TABLE2);
-    printWinkelmandTabel($result);  // <- gewijzigd
+    $result = getWinkelmandData();
+    printWinkelmandTabel($result);
+}
+
+
+function ensureWinkelmandAllowsDuplicates(PDO $conn): void {
+    try {
+        $conn->exec("ALTER TABLE " . CRUD_TABLE2 . " DROP INDEX id");
+    } catch (PDOException $e) {
+        // Index bestaat mogelijk al niet meer of kan niet verwijderd worden.
+    }
+}
+
+function imageExistsInPictures(string $imageFile): bool {
+    $imageFile = basename(trim($imageFile));
+    if ($imageFile === '') {
+        return false;
+    }
+
+    return file_exists(__DIR__ . DIRECTORY_SEPARATOR . 'pictures' . DIRECTORY_SEPARATOR . $imageFile);
+}
+
+function resolveImageFileName(string $image, string $name = ''): string {
+    $image = trim(basename($image));
+    $candidates = [];
+
+    if ($image !== '') {
+        $candidates[] = $image;
+        if (pathinfo($image, PATHINFO_EXTENSION) === '') {
+            $candidates[] = $image . '.jpg';
+            $candidates[] = $image . '.png';
+        }
+    }
+
+    if ($name !== '') {
+        $cleanName = preg_replace('/[^A-Za-z0-9 _\-]/', '', $name);
+        $cleanName = str_replace(' ', '_', $cleanName);
+        $candidates[] = $cleanName . '.jpg';
+        $candidates[] = $cleanName . '.png';
+        $candidates[] = $cleanName;
+    }
+
+    foreach ($candidates as $candidate) {
+        if ($candidate === '') {
+            continue;
+        }
+
+        if (imageExistsInPictures($candidate)) {
+            return $candidate;
+        }
+    }
+
+    return '';
+}
+
+function getWinkelmandData(): array {
+    $conn = connectDb();
+
+    $sql = "SELECT w.id, w.game_id, w.img, w.naam, w.prijs FROM " . CRUD_TABLE2 . " w";
+
+    $query = $conn->prepare($sql);
+    $query->execute();
+    return $query->fetchAll();
 }
 
 
@@ -126,7 +187,12 @@ function printCrudTabel($result) {
         foreach ($allowedColumns as $key) {
             $cell = $row[$key] ?? '';
             if ($key == "img") {
-                $table .= "<td class='img-cell'><img class='img-table' src='pictures/" . htmlspecialchars($cell) . "' alt='Foto'></td>";
+                $imgFile = resolveImageFileName($cell, $row['naam'] ?? '');
+                if ($imgFile !== '') {
+                    $table .= "<td class='img-cell'><img class='img-table' src='pictures/" . htmlspecialchars($imgFile) . "' alt='Foto'></td>";
+                } else {
+                    $table .= "<td class='img-cell'>Geen foto</td>";
+                }
             } elseif ($key == "naam") {
                 $table .= "<td>
                     <a href='game.php?id=" . $row['id'] . "'>
@@ -199,7 +265,7 @@ function updateRecord(array $row){
         ':player' => $row['player'],
         ':domain' => $row['domain'],
         ':consol' => $row['consol'],
-        ':img' => $row['img'],
+        ':img' => resolveImageFileName($row['img'], $row['naam']),
         ':id'=>$row['id']
     ];
 
@@ -235,7 +301,7 @@ function insertRecord($post): bool  {
         ':player' => $post['player'],
         ':domain' => $post['domain'],
         ':consol' => $post['consol'],
-        ':img' => $post['img']
+        ':img' => resolveImageFileName($post['img'] ?? '', $post['naam'] ?? '')
     ];
 
     try {
@@ -312,7 +378,12 @@ function printWinkelmandTabel($result) {
         foreach ($allowedColumns as $key) {
             $cell = $row[$key] ?? '';
             if ($key == "img") {
-                $table .= "<td class='img-cell'><img class='img-table' src='pictures/" . htmlspecialchars($cell) . "' alt='Foto'></td>";
+                $imgFile = htmlspecialchars($cell);
+                if (!empty($imgFile)) {
+                    $table .= "<td class='img-cell'><img class='img-table' src='pictures/" . $imgFile . "' alt='Foto'></td>";
+                } else {
+                    $table .= "<td class='img-cell'>Geen foto</td>";
+                }
             } else {
                 $table .= "<td>" . htmlspecialchars($cell) . "</td>";
             }

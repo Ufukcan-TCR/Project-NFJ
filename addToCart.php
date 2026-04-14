@@ -12,6 +12,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['game_id'])) {
     if ($game) {
         $conn = connectDb();
 
+        // Zorg dat de unieke index die duplicate cart-items blokkeert wordt verwijderd.
+        ensureWinkelmandAllowsDuplicates($conn);
+
+        $cartImage = resolveImageFileName($game['img'], $game['naam']);
+
         $sql = "INSERT INTO " . CRUD_TABLE2 . " (game_id, naam, img, prijs)
                 VALUES (:game_id, :naam, :img, :prijs)";
 
@@ -19,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['game_id'])) {
         $stmt->execute([
             ':game_id' => $game['id'],
             ':naam'    => $game['naam'],
-            ':img'     => $game['img'],
+            ':img'     => $cartImage,
             ':prijs'   => $game['prijs']
         ]);
     }
