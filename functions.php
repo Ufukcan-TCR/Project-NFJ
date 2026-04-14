@@ -29,6 +29,11 @@ include_once "config.php";
 
  function crudMain(){
     echo "<form method='GET'>
+    <input type='text' name='search' placeholder='Zoek game...'>
+    <button type='submit'>Zoeken</button>
+</form>";
+
+    echo "<form method='GET'>
 <select name='genre'>
     <option value=''>Alle genres</option>
     <option value='0'>Indie</option>
@@ -48,10 +53,15 @@ include_once "config.php";
 
     // Haal alle fietsen record uit de tabel 
     $genreId = $_GET['genre'] ?? null;
+$search = $_GET['search'] ?? null;
 
-if ($genreId !== null && $genreId !== '') {
+if (!empty($search)) {
+    $result = searchGames($search);
+} 
+elseif ($genreId !== null && $genreId !== '') {
     $result = filterGamesByGenre($genreId);
-} else {
+} 
+else {
     $result = getData(CRUD_TABLE);
 }
 
@@ -417,6 +427,24 @@ function filterGamesByGenre($genreId) {
 
     $stmt = $conn->prepare($sql);
     $stmt->execute([':id' => $genreId]);
+
+    return $stmt->fetchAll();
+}
+
+function searchGames($searchTerm) {
+    $conn = connectDb();
+
+    $sql = "
+        SELECT videogames.*, genre.genre
+        FROM videogames
+        JOIN genre ON videogames.genrenummer = genre.genreid
+        WHERE videogames.naam LIKE :search
+    ";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([
+        ':search' => '%' . $searchTerm . '%'
+    ]);
 
     return $stmt->fetchAll();
 }
