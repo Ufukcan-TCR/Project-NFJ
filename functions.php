@@ -28,6 +28,15 @@ include_once "config.php";
  // Main functie CRUD NFT
 
  function crudMain(){
+    echo "<form method='GET'>
+<select name='genre'>
+    <option value=''>Alle genres</option>
+    <option value='0'>Indie</option>
+    <option value='1'>Action</option>
+    <option value='2'>Adventure</option>
+</select>
+<button type='submit'>Filter</button>
+</form>";
 
     // Menu-item   insert
     $txt = "
@@ -38,7 +47,13 @@ include_once "config.php";
     echo $txt;
 
     // Haal alle fietsen record uit de tabel 
+    $genreId = $_GET['genre'] ?? null;
+
+if ($genreId !== null && $genreId !== '') {
+    $result = filterGamesByGenre($genreId);
+} else {
     $result = getData(CRUD_TABLE);
+}
 
     //print table
     printCrudTabel($result);
@@ -319,6 +334,21 @@ function printWinkelmandTabel($result) {
     echo $table;
 }
 
+function filterGamesByGenre($genreId) {
+    $conn = connectDb();
+
+    $sql = "
+        SELECT videogames.*, genre.genre
+        FROM videogames
+        JOIN genre ON videogames.genrenummer = genre.genreid
+        WHERE genre.genreid = :id
+    ";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([':id' => $genreId]);
+
+    return $stmt->fetchAll();
+}
 
 function login(){
 
@@ -326,5 +356,6 @@ function login(){
 
 
 }
+
 
 ?>
