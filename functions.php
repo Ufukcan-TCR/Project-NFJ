@@ -28,20 +28,19 @@ include_once "config.php";
  // Main functie CRUD NFT
 
  function crudMain(){
-    echo "<form method='GET'>
-    <input type='text' name='search' placeholder='Zoek game...'>
-    <button type='submit'>Zoeken</button>
-</form>";
+    $search = trim($_GET['search'] ?? '');
+    $genreId = $_GET['genre'] ?? '';
 
-    echo "<form method='GET'>
-<select name='genre'>
-    <option value=''>Alle genres</option>
-    <option value='0'>Indie</option>
-    <option value='1'>Action</option>
-    <option value='2'>Adventure</option>
-</select>
-<button type='submit'>Filter</button>
-</form>";
+    echo "<form method='GET' class='shop-filters'>
+        <input type='text' name='search' placeholder='Zoek game...' value='" . htmlspecialchars($search) . "'>
+        <select name='genre'>
+            <option value=''>Alle genres</option>
+            <option value='Indie'" . ($genreId === 'Indie' ? " selected" : "") . ">Indie</option>
+            <option value='Action'" . ($genreId === 'Action' ? " selected" : "") . ">Action</option>
+            <option value='Adventure'" . ($genreId === 'Adventure' ? " selected" : "") . ">Adventure</option>
+        </select>
+        <button type='submit'>Zoeken</button>
+    </form>";
 
     // Menu-item   insert
     $txt = "
@@ -51,19 +50,14 @@ include_once "config.php";
     </nav><br>";
     echo $txt;
 
-    // Haal alle fietsen record uit de tabel 
-    $genreId = $_GET['genre'] ?? null;
-$search = $_GET['search'] ?? null;
-
-if (!empty($search)) {
-    $result = searchGames($search);
-} 
-elseif ($genreId !== null && $genreId !== '') {
-    $result = filterGamesByGenre($genreId);
-} 
-else {
-    $result = getData(CRUD_TABLE);
-}
+    // Haal alle records uit de tabel 
+    if ($search !== '') {
+        $result = searchGames($search, $genreId);
+    } elseif ($genreId !== '') {
+        $result = filterGamesByGenre($genreId);
+    } else {
+        $result = getData(CRUD_TABLE);
+    }
 
     //print table
     printCrudTabel($result);
@@ -475,33 +469,28 @@ function printWinkelmandTabel($result) {
 function filterGamesByGenre($genreId) {
     $conn = connectDb();
 
-    $sql = "
-        SELECT videogames.*, genre.genre
-        FROM videogames
-        JOIN genre ON videogames.genrenummer = genre.genreid
-        WHERE genre.genreid = :id
-    ";
-
+    $sql = "SELECT * FROM " . CRUD_TABLE . " WHERE genre LIKE :genre";
     $stmt = $conn->prepare($sql);
-    $stmt->execute([':id' => $genreId]);
+    $stmt->execute([':genre' => '%' . $genreId . '%']);
 
     return $stmt->fetchAll();
 }
 
-function searchGames($searchTerm) {
+function searchGames(string $searchTerm, $genreId = '') {
     $conn = connectDb();
 
-    $sql = "
-        SELECT videogames.*, genre.genre
-        FROM videogames
-        JOIN genre ON videogames.genrenummer = genre.genreid
-        WHERE videogames.naam LIKE :search
-    ";
+    $sql = "SELECT * FROM " . CRUD_TABLE . " WHERE naam LIKE :search";
+    $params = [
+        ':search' => '%' . $searchTerm . '%'
+    ];
+
+    if ($genreId !== '' && $genreId !== null) {
+        $sql .= " AND genre LIKE :genre";
+        $params[':genre'] = '%' . $genreId . '%';
+    }
 
     $stmt = $conn->prepare($sql);
-    $stmt->execute([
-        ':search' => '%' . $searchTerm . '%'
-    ]);
+    $stmt->execute($params);
 
     return $stmt->fetchAll();
 }
@@ -551,45 +540,5 @@ function login(){
 
 
 }
-
-function getFavorites(): array {
-    $conn = connectDb();
-
-    $sql = "SELECT f.id, f.game_id, f.naam, f.prijs, f.img FROM " . CRUD_TABLE3 . " f";
-
-    $query = $conn->prepare($sql);
-    $query->execute();
-    return $query->fetchAll();
-}
-
-function printFavoritesTable(array $result): void {
-    if (empty($result)) {
-        echo "<p>Je hebt nog geen favorieten toegevoegd.</p>";
-        return;
-    }
-
-    $table = "<table>";
-    $table .= "<tr>";
-    $table .= "<th>Afbeelding</th><th>Naam</th><th>Prijs</th><th>Actie</th>";
-    $table .= "</tr>";
-
-    foreach ($result as $row) {
-        $table .= "<tr>";
-        $imgFile = htmlspecialchars($row['img']);
-        if (!empty($imgFile)) {
-            $table .= "<td class='img-cell'><img class='img-table' src='pictures/" . $imgFile . "' alt='Foto'></td>";
-        } else {
-            $table .= "<td class='img-cell'>Geen foto</td>";
-        }
-        $table .= "<td>" . htmlspecialchars($row['naam']) . "</td>";
-        $table .= "<td>€" . htmlspecialchars($row['prijs']) . "</td>";
-        $table .= "<td>\n            <form method='post' action='removeFromFavorites.php'>\n                <input type='hidden' name='favorite_id' value='" . $row['id'] . "'>\n                <button class='btn' type='submit'>Verwijder</button>\n            </form>\n        </td>";
-        $table .= "</tr>";
-    }
-
-    $table .= "</table>";
-    echo $table;
-}
-
 
 ?>
