@@ -552,4 +552,44 @@ function login(){
 
 }
 
+function getFavorites(): array {
+    $conn = connectDb();
+
+    $sql = "SELECT f.id, f.game_id, f.naam, f.prijs, f.img FROM " . CRUD_TABLE3 . " f";
+
+    $query = $conn->prepare($sql);
+    $query->execute();
+    return $query->fetchAll();
+}
+
+function printFavoritesTable(array $result): void {
+    if (empty($result)) {
+        echo "<p>Je hebt nog geen favorieten toegevoegd.</p>";
+        return;
+    }
+
+    $table = "<table>";
+    $table .= "<tr>";
+    $table .= "<th>Afbeelding</th><th>Naam</th><th>Prijs</th><th>Actie</th>";
+    $table .= "</tr>";
+
+    foreach ($result as $row) {
+        $table .= "<tr>";
+        $imgFile = htmlspecialchars($row['img']);
+        if (!empty($imgFile)) {
+            $table .= "<td class='img-cell'><img class='img-table' src='pictures/" . $imgFile . "' alt='Foto'></td>";
+        } else {
+            $table .= "<td class='img-cell'>Geen foto</td>";
+        }
+        $table .= "<td>" . htmlspecialchars($row['naam']) . "</td>";
+        $table .= "<td>€" . htmlspecialchars($row['prijs']) . "</td>";
+        $table .= "<td>\n            <form method='post' action='removeFromFavorites.php'>\n                <input type='hidden' name='favorite_id' value='" . $row['id'] . "'>\n                <button class='btn' type='submit'>Verwijder</button>\n            </form>\n        </td>";
+        $table .= "</tr>";
+    }
+
+    $table .= "</table>";
+    echo $table;
+}
+
+
 ?>
