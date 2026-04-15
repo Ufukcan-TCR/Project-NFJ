@@ -28,6 +28,20 @@ include_once "config.php";
  // Main functie CRUD NFT
 
  function crudMain(){
+    echo "<form method='GET'>
+    <input type='text' name='search' placeholder='Zoek game...'>
+    <button type='submit'>Zoeken</button>
+</form>";
+
+    echo "<form method='GET'>
+<select name='genre'>
+    <option value=''>Alle genres</option>
+    <option value='0'>Indie</option>
+    <option value='1'>Action</option>
+    <option value='2'>Adventure</option>
+</select>
+<button type='submit'>Filter</button>
+</form>";
 
     // Menu-item   insert
     $txt = "
@@ -38,7 +52,18 @@ include_once "config.php";
     echo $txt;
 
     // Haal alle fietsen record uit de tabel 
+    $genreId = $_GET['genre'] ?? null;
+$search = $_GET['search'] ?? null;
+
+if (!empty($search)) {
+    $result = searchGames($search);
+} 
+elseif ($genreId !== null && $genreId !== '') {
+    $result = filterGamesByGenre($genreId);
+} 
+else {
     $result = getData(CRUD_TABLE);
+}
 
     //print table
     printCrudTabel($result);
@@ -447,21 +472,47 @@ function printWinkelmandTabel($result) {
     echo $table;
 }
 
+function filterGamesByGenre($genreId) {
+    $conn = connectDb();
 
-function login(){
+    $sql = "
+        SELECT videogames.*, genre.genre
+        FROM videogames
+        JOIN genre ON videogames.genrenummer = genre.genreid
+        WHERE genre.genreid = :id
+    ";
 
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([':id' => $genreId]);
 
+    return $stmt->fetchAll();
+}
 
+function searchGames($searchTerm) {
+    $conn = connectDb();
 
+    $sql = "
+        SELECT videogames.*, genre.genre
+        FROM videogames
+        JOIN genre ON videogames.genrenummer = genre.genreid
+        WHERE videogames.naam LIKE :search
+    ";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([
+        ':search' => '%' . $searchTerm . '%'
+    ]);
+
+    return $stmt->fetchAll();
 }
 
 function getFavorites(): array {
     $conn = connectDb();
 
     $sql = "SELECT f.id, f.game_id, f.naam, f.prijs, f.img FROM " . CRUD_TABLE3 . " f";
-
     $query = $conn->prepare($sql);
     $query->execute();
+
     return $query->fetchAll();
 }
 
@@ -492,6 +543,13 @@ function printFavoritesTable(array $result): void {
 
     $table .= "</table>";
     echo $table;
+}
+
+function login(){
+
+
+
+
 }
 
 ?>
