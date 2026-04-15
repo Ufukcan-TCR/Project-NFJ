@@ -117,6 +117,54 @@ function getWinkelmandData(): array {
     return $query->fetchAll();
 }
 
+function favoriteExists(int $gameId): bool {
+    $conn = connectDb();
+
+    $sql = "SELECT 1 FROM " . CRUD_TABLE3 . " WHERE game_id = :game_id LIMIT 1";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([':game_id' => $gameId]);
+
+    return (bool) $stmt->fetchColumn();
+}
+
+function addFavorite(int $gameId): bool {
+    $game = getRecord($gameId);
+    if (!$game || favoriteExists($gameId)) {
+        return false;
+    }
+
+    $conn = connectDb();
+    $favoriteImage = resolveImageFileName($game['img'], $game['naam']);
+
+    $sql = "INSERT INTO " . CRUD_TABLE3 . " (game_id, naam, img, prijs)
+            VALUES (:game_id, :naam, :img, :prijs)";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([
+        ':game_id' => $game['id'],
+        ':naam'    => $game['naam'],
+        ':img'     => $favoriteImage,
+        ':prijs'   => $game['prijs']
+    ]);
+
+    return ($stmt->rowCount() === 1);
+}
+
+function removeFavorite(int $favoriteId): bool {
+    if ($favoriteId <= 0) {
+        return false;
+    }
+
+    $conn = connectDb();
+
+    $sql = "DELETE FROM " . CRUD_TABLE3 . " WHERE id = :id";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindValue(':id', $favoriteId, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return ($stmt->rowCount() === 1);
+}
+
 
  // selecteer de data uit de opgeven table
  function getData($table): array {
@@ -163,7 +211,7 @@ function printCrudTabel($result) {
     foreach ($allowedColumns as $header) {
         $table .= "<th>" . htmlspecialchars($header) . "</th>";
     }
-    $table .= "<th colspan='3'>Actie</th>";
+    $table .= "<th colspan='4'>Actie</th>";
     $table .= "</tr>";
 
     foreach ($result as $row) {
@@ -211,6 +259,15 @@ function printCrudTabel($result) {
             <form method='post' action='addToCart.php'>
                 <input type='hidden' name='game_id' value='" . $row['id'] . "'>
                 <button class='btn' type='submit'>🛒</button>
+            </form>
+        </td>";
+
+        // Favorieten knop
+        $table .= "
+        <td>
+            <form method='post' action='addToFavorites.php'>
+                <input type='hidden' name='game_id' value='" . $row['id'] . "'>
+                <button class='btn' type='submit'>★</button>
             </form>
         </td>";
 
@@ -396,6 +453,45 @@ function login(){
 
 
 
+}
+
+function getFavorites(): array {
+    $conn = connectDb();
+
+    $sql = "SELECT f.id, f.game_id, f.naam, f.prijs, f.img FROM " . CRUD_TABLE3 . " f";
+
+    $query = $conn->prepare($sql);
+    $query->execute();
+    return $query->fetchAll();
+}
+
+function printFavoritesTable(array $result): void {
+    if (empty($result)) {
+        echo "<p>Je hebt nog geen favorieten toegevoegd.</p>";
+        return;
+    }
+
+    $table = "<table>";
+    $table .= "<tr>";
+    $table .= "<th>Afbeelding</th><th>Naam</th><th>Prijs</th><th>Actie</th>";
+    $table .= "</tr>";
+
+    foreach ($result as $row) {
+        $table .= "<tr>";
+        $imgFile = htmlspecialchars($row['img']);
+        if (!empty($imgFile)) {
+            $table .= "<td class='img-cell'><img class='img-table' src='pictures/" . $imgFile . "' alt='Foto'></td>";
+        } else {
+            $table .= "<td class='img-cell'>Geen foto</td>";
+        }
+        $table .= "<td>" . htmlspecialchars($row['naam']) . "</td>";
+        $table .= "<td>€" . htmlspecialchars($row['prijs']) . "</td>";
+        $table .= "<td>\n            <form method='post' action='removeFromFavorites.php'>\n                <input type='hidden' name='favorite_id' value='" . $row['id'] . "'>\n                <button class='btn' type='submit'>Verwijder</button>\n            </form>\n        </td>";
+        $table .= "</tr>";
+    }
+
+    $table .= "</table>";
+    echo $table;
 }
 
 ?>

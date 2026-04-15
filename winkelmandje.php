@@ -16,6 +16,7 @@
             <div class="item"><a class='pagina' href="index.php">Home</a></div>
             <div class="item"><a class='pagina' href="shop.php">Shop</a></div>
             <div class="selected">Winkelmandje</div>
+            <div class="item"><a class='pagina' href="favorieten.php">Favorieten</a></div>
             
         </div>
 

@@ -9,5 +9,6 @@ define("PASSWORD", "");
 
 define("CRUD_TABLE", "videogames");
 define("CRUD_TABLE2", "winkelmandinhoud");
+define("CRUD_TABLE3", "favorieten");
 
 ?>
